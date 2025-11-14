@@ -1,0 +1,60 @@
+@import "tailwindcss";
+/* @plugin "daisyui" {
+  themes: light --default, dark --prefersdark, cupcake;
+} */
+@plugin 'tailwind-scrollbar' {
+  nocompatible: true;
+}
+
+body{
+  font-family: "Poppins", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    color : rgb(231, 228, 228);
+    background-color: #2c1e4a;
+}
+button:hover{
+  cursor: pointer;
+}
+.heading{
+  font-size: 32px;
+  color: rgb(193, 170, 170);
+  font-weight: 600;
+}
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.hover-scale-102:hover {
+  transform: scale(1.02);
+}
+
+.scale-105 {
+  transform: scale(1.05);
+}
