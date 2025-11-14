@@ -132,15 +132,15 @@ const Login = () => {
       }
     } catch (error) {
       // Handle specific error messages from backend
-      if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else if (error.response?.status === 401) {
-        toast.error("Invalid email or password");
-      } else if (error.response?.status === 404) {
-        toast.error("User not found. Please sign up first.");
-      } else {
-        toast.error("Unable to login. Please try again.");
-      }
+      // if (error.response?.data?.message) {
+      //   toast.error(error.response.data.message);
+      // } else if (error.response?.status === 401) {
+      //   toast.error("Invalid email or password");
+      // } else if (error.response?.status === 404) {
+      //   toast.error("User not found. Please sign up first.");
+      // } else {
+      //   toast.error("Unable to login. Please try again.");
+      // }
       console.log("auth error : ", error);
     } finally {
       setLoading(false);
