@@ -158,7 +158,7 @@ const Login = () => {
           <IoArrowBack size={24} />
         </button>
         <div className="text-[#cb6ce6] text-xl sm:text-2xl font-bold">
-          Quizzi
+          Quizzii
         </div>
       </div>
       <div className="flex justify-center flex-col items-center">
