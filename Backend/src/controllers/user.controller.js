@@ -26,49 +26,54 @@ const generateAccessAndRefershToken = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { username, password, email } = req.body;
-  // console.log("body :".req.body)
-  // console.log("files : ", req.files);
+  const { username, email, password } = req.body; // req.body is an object, possibly from a server response containing properties like username, email and password.
+  // The { username, email, password } syntax pulls these specific properties out of req.body and assigns them directly to new variables with the same names.
+  // Now, username, email and password are individual constants containing the values from req.body.
 
-  if ([username, password, email].some((field) => field?.trim() == "")) {
-    throw new ApiError(400, "All fileds are required");
+  if (
+    // some is the method on array on which we can check any condition on each element of the array and according to the codition it will return true or false.
+    [username, email, password].some((feild) => feild?.trim() === "") // In the some() method this statement(feild?.trim() === "") means if feild is present then trim it then check if it is equals to "" => output will be boolean
+  ) {
+    throw new ApiError(400, "All feilds are required");
   }
-
+  // checking weather is user is existing or not
   const existedUser = await User.findOne({
     $or: [{ username }, { email }],
   });
-
   if (existedUser) {
-    throw new ApiError(400, "User with email or username already exists");
+    throw new ApiError(409, "User with same Username or Email, already exists");
   }
 
-  const avatarLocalPath = req.files?.avatar[0]?.path;
+  // uploading the avatar
+  const avatarLocalPath = [req.files?.avatar[0]?.buffer];
   if (!avatarLocalPath) {
-    throw new ApiError(400, "avatar file is required");
+    throw new ApiError(400, "Please upload an Avatar");
   }
-
   const avatar = await uploadOnCloudinary(avatarLocalPath);
-
-  if (!avatar || !avatar.url) {
-    throw new ApiError(500, "Failed to upload avatar to Cloudinary");
+  if (!avatar) {
+    throw new ApiError(400, "Avatar is required");
   }
 
+  // creating the user on database
   const user = await User.create({
-    username,
-    email,
-    password,
-    avatar: avatar.url,
+    username: username.toLowerCase(),
+    avatar: avatar[0].url,
+    email: email,
+    password: password,
   });
 
-  const createdUser = await User.findById(user._id).select("-password");
-
+  const createdUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  );
   if (!createdUser) {
-    throw new ApiError(500, "something went wrong while registering user");
+    throw new ApiError(500, "Something went wrong while registering the user");
+  } else {
+    console.log("The User is Created with the username :", user.username);
   }
 
   return res
-    .status(200)
-    .json(new ApiResponse(200, createdUser, "user registered successfully!"));
+    .status(201)
+    .json(new ApiResponse(200, createdUser, "User registered successfully"));
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -276,49 +281,52 @@ const changeUserDetails = asyncHandler(async (req, res) => {
 });
 
 const changeAvatar = asyncHandler(async (req, res) => {
-  const avatarLocalPath = req.files?.avatar[0].path;
-  // console.log("Request files:", req.files?.avatar[0].path);
+  // Get the buffer directly, don't wrap in an array
+  const avatarBuffer = req.files?.avatar?.[0]?.buffer;
 
-  if (!avatarLocalPath) {
-    throw new ApiError(400, "avatar file is missing");
+  if (!avatarBuffer) {
+    throw new ApiError(400, "Invalid provided path of the avatar");
   }
 
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
+  console.log("HI2 : ", avatarBuffer);
 
-  if (!avatar) {
-    throw new ApiError(400, "error while uploading on cloudinary");
+  // Upload the avatar to Cloudinary
+  const avatar = await uploadOnCloudinary([avatarBuffer]); // Pass buffer as array
+
+  console.log("HI : ", avatar);
+
+  if (!avatar || !avatar[0]?.url) {
+    throw new ApiError(400, "Error while uploading the avatar");
   }
 
+  // Delete the old avatar of the user
   const getCurrentUser = await User.findById(req.user._id).select("-password");
+
   if (!getCurrentUser) {
     throw new ApiError(401, "Not getting current user!!!");
   }
-  const avatarArrLastIndex = getCurrentUser.avatar.split("/").length - 1; // getting the last element of the array because publicId of the old avatar is present at last element of the array
+
+  const avatarArrLastIndex = getCurrentUser.avatar.split("/").length - 1;
   const publicIdOfCloudinaryImage = getCurrentUser.avatar
     .split("/")
-    [avatarArrLastIndex].split(".")[0]; // getting the publicId of the old avatar
+    [avatarArrLastIndex].split(".")[0];
+
   const deleteOldAvatar = await deleteFromCloudinary(publicIdOfCloudinaryImage);
+
   if (!deleteOldAvatar) {
     throw new ApiError(500, "The old avatar is not deleted yet!!!");
   }
 
-  if (!avatar.url) {
-    throw new ApiError(400, "error while uploading  on avatar");
-  }
-
+  // Update user's avatar
   const user = await User.findByIdAndUpdate(
     req.user?._id,
-    {
-      $set: {
-        avatar: avatar.url,
-      },
-    },
+    { $set: { avatar: avatar[0].url } },
     { new: true }
   ).select("-password");
 
   return res
     .status(200)
-    .json(new ApiResponse(200, user, "avatar updated successfully"));
+    .json(new ApiResponse(200, user, "User Avatar updated Successfully"));
 });
 
 export {

@@ -15,6 +15,11 @@ const Login = () => {
     email: "",
     password: "",
   });
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+  });
+
   let userData;
   const login = userQuiz((state) => state.login);
   const navigate = useNavigate();
@@ -23,8 +28,76 @@ const Login = () => {
     setShowPassword((prev) => !prev);
   };
 
+  // Validation functions
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      return "Email is required";
+    }
+    if (!emailRegex.test(email)) {
+      return "Please enter a valid email address";
+    }
+    return "";
+  };
+
+  const validatePassword = (password) => {
+    if (!password) {
+      return "Password is required";
+    }
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long";
+    }
+    return "";
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    let error = "";
+
+    if (name === "email") {
+      error = validateEmail(value);
+    } else if (name === "password") {
+      error = validatePassword(value);
+    }
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: error,
+    }));
+  };
+
   const handleSubmitLogin = async (e) => {
     e.preventDefault();
+
+    // Validate all fields before submission
+    const emailError = validateEmail(formData.email);
+    const passwordError = validatePassword(formData.password);
+
+    if (emailError || passwordError) {
+      setErrors({
+        email: emailError,
+        password: passwordError,
+      });
+      toast.error("Please fix the validation errors");
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await axios.post(
@@ -44,7 +117,7 @@ const Login = () => {
         if (accessToken) {
           localStorage.setItem("tokens", accessToken);
           localStorage.setItem("userId", userData._id);
-          toast.success("successfully logged in!");
+          toast.success("Successfully logged in!");
           login({
             username: userData.username,
             email: userData.email,
@@ -58,19 +131,20 @@ const Login = () => {
         }, 2000);
       }
     } catch (error) {
-      toast.error("unable to login");
+      // Handle specific error messages from backend
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else if (error.response?.status === 401) {
+        toast.error("Invalid email or password");
+      } else if (error.response?.status === 404) {
+        toast.error("User not found. Please sign up first.");
+      } else {
+        toast.error("Unable to login. Please try again.");
+      }
       console.log("auth error : ", error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
   };
 
   return (
@@ -109,23 +183,36 @@ const Login = () => {
               </Link>
             </div>
           </div>
-          <form action="" className="flex flex-col gap-3 sm:gap-4">
+          <form
+            onSubmit={handleSubmitLogin}
+            className="flex flex-col gap-3 sm:gap-4"
+          >
             <div className="px-2 sm:px-4">
               <label htmlFor="email" className="px-2 text-sm sm:text-base">
                 Email
               </label>
-              <div className="bg-[#2c1e4a] w-full p-2 rounded-2xl sm:rounded-3xl">
+              <div
+                className={`bg-[#2c1e4a] w-full p-2 rounded-2xl sm:rounded-3xl ${
+                  errors.email ? "ring-2 ring-red-500" : ""
+                }`}
+              >
                 <input
                   id="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   required
                   type="email"
                   placeholder="Enter your email"
                   className="w-full outline-none px-2 sm:px-3 text-sm sm:text-base bg-transparent"
                 />
               </div>
+              {errors.email && (
+                <p className="text-red-400 text-xs sm:text-sm mt-1 px-2">
+                  {errors.email}
+                </p>
+              )}
             </div>
             <div className="px-2 sm:px-4">
               <div className="flex justify-between items-center">
@@ -146,23 +233,33 @@ const Login = () => {
                   )}
                 </div>
               </div>
-              <div className="bg-[#2c1e4a] w-full p-2 rounded-2xl sm:rounded-3xl">
+              <div
+                className={`bg-[#2c1e4a] w-full p-2 rounded-2xl sm:rounded-3xl ${
+                  errors.password ? "ring-2 ring-red-500" : ""
+                }`}
+              >
                 <input
                   name="password"
                   id="password"
                   required
                   value={formData.password}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   className="w-full outline-none px-2 sm:px-3 text-sm sm:text-base bg-transparent"
                 />
               </div>
+              {errors.password && (
+                <p className="text-red-400 text-xs sm:text-sm mt-1 px-2">
+                  {errors.password}
+                </p>
+              )}
             </div>
             <div className="flex justify-center mt-2 sm:mt-4">
               <button
+                type="submit"
                 className="bg-[#2c1e4a] w-full sm:w-3/4 md:w-1/2 h-10 sm:h-9 rounded-2xl sm:rounded-3xl font-semibold cursor-pointer hover:bg-[#3a2760] transition-colors text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={handleSubmitLogin}
                 disabled={loading}
               >
                 {loading ? "Logging in..." : "Login"}

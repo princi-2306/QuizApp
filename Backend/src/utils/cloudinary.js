@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const uploadOnCloudinary = async (localFilePath) => {
+const uploadOnCloudinary = async (files) => {
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -12,17 +12,29 @@ const uploadOnCloudinary = async (localFilePath) => {
   });
 
   try {
-    if (!localFilePath) return null;
-    const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "image",
-    });
-    // console.log("file uploaded on cloudinary", response.url);
-    fs.unlinkSync(localFilePath);
-    // console.log(response);
-    return response;
+    if (!Array.isArray(files) || files.length === 0) {
+      throw new Error("No valid files provided for upload");
+    }
+
+    // Convert ArrayBuffer to Buffer (Fixing the issue)
+    const uploadedImages = await Promise.all(
+      files.map((file) => {
+        return new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { resource_type: "image" },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+          uploadStream.end(Buffer.from(file)); // Convert ArrayBuffer to Buffer
+        });
+      })
+    );
+
+    return uploadedImages; // Return an array of uploaded image data
   } catch (error) {
-    fs.unlinkSync(localFilePath);
-    console.log("Error While Uploading the File on Cloudinary,", error);
+    console.error("Cloudinary Upload Error:", error);
     return null;
   }
 };
