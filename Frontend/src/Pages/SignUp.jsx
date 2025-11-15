@@ -99,7 +99,7 @@ const SignUp = () => {
       } else if (error.response?.status === 409) {
         toast.error("Username or email already exists!");
       } else {
-        toast.error("Username or email already exists!");
+        toast.error("Unable to create user!");
       }
     } finally {
       setLoading(false);
@@ -160,70 +160,70 @@ const SignUp = () => {
     }
   };
 
-  // const formValidate = async () => {
-  //   const myError = {};
+  const formValidate = async () => {
+    const myError = {};
 
-  //   // Username validation
-  //   if (!formData.username.trim()) {
-  //     myError.username = "Username is required";
-  //   } else if (formData.username.length < 3) {
-  //     myError.username = "Username must be at least 3 characters long";
-  //   } else if (formData.username.length > 20) {
-  //     myError.username = "Username must not exceed 20 characters";
-  //   } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-  //     myError.username =
-  //       "Username can only contain letters, numbers, and underscores";
-  //   } else {
-  //     // Check if username already exists
-  //     const isAvailable = await checkUsernameAvailability(formData.username);
-  //     if (!isAvailable) {
-  //       myError.username = "Username is already taken";
-  //     }
-  //   }
+    // Username validation
+    if (!formData.username.trim()) {
+      myError.username = "Username is required";
+    } else if (formData.username.length < 3) {
+      myError.username = "Username must be at least 3 characters long";
+    } else if (formData.username.length > 20) {
+      myError.username = "Username must not exceed 20 characters";
+    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      myError.username =
+        "Username can only contain letters, numbers, and underscores";
+    } else {
+      // Check if username already exists
+      const isAvailable = await checkUsernameAvailability(formData.username);
+      if (!isAvailable) {
+        myError.username = "Username is already taken";
+      }
+    }
 
-  //   // Email validation
-  //   if (!formData.email.trim()) {
-  //     myError.email = "Email is required";
-  //   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-  //     myError.email = "Please enter a valid email address";
-  //   } else {
-  //     // Check if email already exists
-  //     const isAvailable = await checkEmailAvailability(formData.email);
-  //     if (!isAvailable) {
-  //       myError.email = "Email is already registered";
-  //     }
-  //   }
+    // Email validation
+    if (!formData.email.trim()) {
+      myError.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      myError.email = "Please enter a valid email address";
+    } else {
+      // Check if email already exists
+      const isAvailable = await checkEmailAvailability(formData.email);
+      if (!isAvailable) {
+        myError.email = "Email is already registered";
+      }
+    }
 
-  //   // Password validation
-  //   if (!formData.password) {
-  //     myError.password = "Password is required";
-  //   } else if (formData.password.length < 8) {
-  //     myError.password = "Password must be at least 8 characters long";
-  //   } else if (!/(?=.*[a-z])/.test(formData.password)) {
-  //     myError.password = "Password must contain at least one lowercase letter";
-  //   } else if (!/(?=.*[A-Z])/.test(formData.password)) {
-  //     myError.password = "Password must contain at least one uppercase letter";
-  //   } else if (!/(?=.*\d)/.test(formData.password)) {
-  //     myError.password = "Password must contain at least one number";
-  //   } else if (!/(?=.*[@$!%*?&])/.test(formData.password)) {
-  //     myError.password =
-  //       "Password must contain at least one special character (@$!%*?&)";
-  //   }
+    // Password validation
+    if (!formData.password) {
+      myError.password = "Password is required";
+    } else if (formData.password.length < 8) {
+      myError.password = "Password must be at least 8 characters long";
+    } else if (!/(?=.*[a-z])/.test(formData.password)) {
+      myError.password = "Password must contain at least one lowercase letter";
+    } else if (!/(?=.*[A-Z])/.test(formData.password)) {
+      myError.password = "Password must contain at least one uppercase letter";
+    } else if (!/(?=.*\d)/.test(formData.password)) {
+      myError.password = "Password must contain at least one number";
+    } else if (!/(?=.*[@$!%*?&])/.test(formData.password)) {
+      myError.password =
+        "Password must contain at least one special character (@$!%*?&)";
+    }
 
-  //   // Confirm password validation
-  //   if (!formData.confirmPass) {
-  //     myError.confirmPass = "Please confirm your password";
-  //   } else if (formData.password !== formData.confirmPass) {
-  //     myError.confirmPass = "Passwords do not match";
-  //   }
+    // Confirm password validation
+    if (!formData.confirmPass) {
+      myError.confirmPass = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPass) {
+      myError.confirmPass = "Passwords do not match";
+    }
 
-  //   // Avatar validation
-  //   if (!formData.avatar) {
-  //     myError.avatar = "Avatar is required";
-  //   }
+    // Avatar validation
+    if (!formData.avatar) {
+      myError.avatar = "Avatar is required";
+    }
 
-  //   return myError;
-  //};
+    return myError;
+  };
 
   return (
     <div className="bg-[#2c1e4a] w-full min-h-screen p-10 sm:p-6 md:p-8 lg:p-10">
@@ -236,7 +236,7 @@ const SignUp = () => {
           <IoArrowBack size={24} />
         </button>
         <div className="text-[#cb6ce6] text-xl sm:text-2xl font-bold">
-          Quizzii
+          Quizzi
         </div>
       </div>
       <div className="flex justify-center items-center">
